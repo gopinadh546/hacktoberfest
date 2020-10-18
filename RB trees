@@ -1,0 +1,548 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+struct node {
+  int data;
+  struct node *left;
+  struct node *right;
+  struct node *parent;
+  int color;
+  //1 means "red"
+  //0 means "black"
+};
+struct node *root=NULL;
+struct node *newnode(int n)
+{
+    struct node *p=(struct node*)malloc(sizeof(struct node));
+    p->data=n;
+    p->left=NULL;
+    p->right=NULL;
+    p->parent=NULL;
+    p->color=1;
+    return p;
+}
+struct node* find(struct node *rt, int key) 
+{
+    struct node *p=rt;
+    while(p!=NULL)
+    {
+        if(p->data<key)
+        {
+            if(p->right!=NULL)
+            p=p->right;
+            else
+            break;
+        }
+        else if(p->data>key)
+        {
+            if(p->left!=NULL)
+            p=p->left;
+            else
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return p;
+}
+
+void leftrotation(struct node * ptr)
+{
+    struct node * r=ptr->right;
+    if(ptr==root)
+    {
+        root=r;
+    }
+    if(ptr->parent!=NULL)
+    {
+        if(ptr->parent->left==ptr)
+        {
+            ptr->parent->left=r;
+        }
+        else
+        ptr->parent->right=r;
+    }    
+       r->parent=ptr->parent;
+        ptr->parent=r;
+    
+    
+    struct node *T = r->left; 
+    ptr->right=T;
+    if(T!=NULL)
+    T->parent=ptr; 
+    r->left = ptr; 
+    
+}
+void rightrotation(struct node * ptr)
+{
+     struct node *r=ptr->left;
+    if(ptr==root)
+    {
+        root=r;
+    }
+    if(ptr->parent!=NULL)
+    {
+        if(ptr->parent->left==ptr)
+        {
+            ptr->parent->left=r;
+        }
+        else
+        ptr->parent->right=r;
+    }
+    
+        r->parent=ptr->parent;
+        ptr->parent=r;
+    
+    
+    struct node *T = r->right; 
+    ptr->left=T;
+    if(T!=NULL)
+    T->parent=ptr; 
+    r->right = ptr; 
+}
+
+
+
+void inorder(struct node * root)
+{
+    if(root!=NULL)
+    {
+        inorder(root->left);
+        printf("%d ",root->data);
+        inorder(root->right);
+    }
+}
+struct node * Successor(struct node *rt)
+{
+    struct node * ptr=rt;
+    while(ptr->left!=NULL)
+    {
+        
+        ptr=ptr->left;
+    }
+    return ptr;
+}
+// struct node* succ(struct node *root)
+// {
+//     if (root->left == NULL) 
+//         { 
+//             struct node *ptr = root->right; 
+//             free(root); 
+//             return ptr; 
+//         } 
+//         else if (root->right == NULL) 
+//         { 
+//             struct node *ptr = root->left; 
+//             free(root); 
+//             return ptr; 
+//         } 
+//      //this means it has both child    
+//       struct node* temp = Successor(root->right); 
+// }
+
+int isblack(struct node * ptr)
+{
+    if(ptr==NULL)
+    return 1;
+    else
+    {
+        if(ptr->color==0)
+        return 1;
+    }
+    return 0;
+}
+
+struct node * find_sib(struct node *ptr )
+{ 
+    if (ptr->parent == NULL) 
+      return NULL; 
+    // now it means it is left child
+    //so return right child
+    if (ptr->parent->left==ptr) 
+      return ptr->parent->right; 
+  
+    return ptr->parent->left; 
+}
+void fixup(struct node *ptr)
+{
+    if(ptr==root) {
+      return; 
+    }
+    if(ptr==NULL)
+    {
+        printf("parent is null\n");
+    }
+    struct node  *sib = find_sib(ptr);
+    struct node *par = ptr->parent; 
+    if (sib == NULL) { 
+      fixup(par); 
+    } 
+    else { 
+      if (sib->color == 1) 
+      { 
+        par->color = 1; 
+        sib->color = 0; 
+        if (sib->parent->left==sib) { 
+          rightrotation(par);
+         
+        } else { 
+          leftrotation(par); 
+        } 
+        fixup(ptr); 
+      } 
+      else { 
+        if (!isblack(sib->right)|| !isblack(sib->right))
+        { 
+          if (sib->left != NULL && sib->left->color == 1) { 
+            if (sib->parent->right==sib) { 
+             sib->left->color = par->color; 
+              rightrotation(sib); 
+              leftrotation(par);  
+            } 
+            else if(sib->parent->left==sib) { 
+              sib->left->color = sib->color; 
+              sib->color = par->color; 
+              rightrotation(par); 
+            } 
+          } 
+          else { 
+            if (sib->parent->left==sib) { 
+              sib->right->color = par->color; 
+              leftrotation(sib); 
+              rightrotation(par); 
+            } 
+            else { 
+              sib->right->color = sib->color; 
+              sib->color = par->color; 
+              leftrotation(par); 
+            } 
+          } 
+          par->color = 0; 
+        } 
+        else { 
+          sib->color = 1; 
+          if (par->color == 0) 
+            fixup(par); 
+          else
+            par->color = 0; 
+        } 
+      } 
+    } 
+}
+void dd(struct node *temp)
+{
+    // we are doing as we does in bst
+    struct node *ptr;
+    //that means this has two children
+      if (temp->left != NULL && temp->right != NULL) 
+         ptr=Successor(temp->right); 
+  
+    //when this is leaf node the Successor is null
+    if (temp->left == NULL && temp->right == NULL) 
+      ptr=NULL; 
+  
+    if (temp->left != NULL) 
+      ptr= temp->left; 
+    else
+      ptr= temp->right;
+      
+    int both_are_black=0;  
+    //this means  if we delete one tree will be decreased by 1 black heigth on that side
+    if(isblack(ptr)&&isblack(temp)) 
+    {
+        both_are_black=1;
+    }
+    struct node *par=temp->parent;
+    //if succesor is NULL
+    if(ptr==NULL)
+    {
+        if(temp==root)
+        {
+            root=NULL;
+        }
+        else
+        {
+            if(both_are_black==1)
+            {
+                fixup(temp);
+            }
+            else
+            {
+                struct node *ss=find_sib(temp);
+                if(ss!=NULL)
+                {
+                    ss->color=1;
+                }
+            }
+            if(temp->parent->left==temp)
+            {
+                temp->parent->left=NULL;
+            }
+            else
+            temp->parent->right=NULL;
+            
+        }
+        free(temp);
+    
+        return ;
+        
+    }
+    
+    if(temp->left==NULL || temp->right==NULL)
+    {
+        if(temp==root)
+        {temp->data=ptr->data;
+        temp->left=NULL;
+        temp->right=NULL;
+        free(ptr);
+        }
+        else
+        {
+            if(temp->parent->left==temp)
+            {
+                temp->parent->left=ptr;
+            }
+            else
+            {
+              par->right=ptr;  
+            }
+            free(temp);
+            ptr->parent=par;
+            if(both_are_black)
+            {
+                fixup(ptr);
+            }
+            else
+            {
+                ptr->color=0;
+            }
+        }
+        return;
+    }
+    int x=temp->data;
+    temp->data=ptr->data;
+    ptr->data=x;
+    dd(ptr);
+    
+}
+
+struct node* delete(struct node *root ,int n) { 
+    if (root == NULL) 
+    { printf("the tree is empty enter the nodes\n");
+        return NULL; 
+    }
+    struct node *del = find(root,n); 
+    if (del->data != n) { 
+      printf("the number %d is not present in th tree\n",n);
+      return NULL; 
+    } 
+
+   dd(del);
+   return root;
+
+}
+void fixtree(struct node *new)
+{
+    
+    if(new==root)
+    {
+        new->color=0;
+        return ;
+    }
+    struct node *par=new->parent;
+    struct node *ppar=new->parent->parent;
+    struct node *uncl;
+    if (par== NULL || ppar == NULL) 
+      uncl=NULL;
+    else if(ppar->left==par)
+    uncl=ppar->right;
+    else
+    uncl=ppar->left;
+    
+    if(par->color!=0)
+    {
+        ///NULL means black node 
+       // if uncle is red color 
+        if(uncl!=NULL && uncl->color==1 )
+        {
+            
+            //recoloring change ppar color to red
+            // and both child color to black by this problem cascades up
+            par->color=0;
+            uncl->color=0;
+            ppar->color=1;
+            fixtree(ppar);
+        }
+        else{
+            
+            // this means the uncle is black 
+            // so for this to be fixed up we need to do rotation 
+            //and exchnge color of the previos ppar and par 
+            
+            if(new->parent==new->parent->parent->left)
+            {
+                //if the inserted element is in left of its parent 
+                if(new==par->left)
+                {
+                     
+                    int temp=ppar->color;
+                    ppar->color=par->color;
+                    par->color=temp;
+                    rightrotation(ppar);
+                }
+                else
+                {
+                     
+                    // for this the new child is on right 
+                    //so we need to left rotate fisrt then exchange recolor
+                    //and the rotate ppar
+                //    ppar->left=
+                leftrotation(par);
+                   int temp=ppar->color;
+                    ppar->color=new->color;
+                    new->color=temp;
+                    rightrotation(ppar);
+                }
+            }
+            else // means par is right of ppar
+            {
+               
+                if(new==par->left)
+                {
+                    // for this the new child is on left 
+                    //so we need to right rotate fisrt then exchange recolor
+                    //and the left rotate ppar
+                   //ppar->right=
+                   rightrotation(par);
+                   int temp=ppar->color;
+                    ppar->color=new->color;
+                    new->color=temp;
+                    leftrotation(ppar);
+                }
+                else
+                {
+                
+                    // just need one rotation and one echange of color
+                    int temp=ppar->color;
+                    ppar->color=par->color;
+                    par->color=temp;
+                    leftrotation(ppar);
+                    //printf("parent of 5 %d root %d",par->data,root->data);
+                }
+            }
+            
+            
+        }
+    }
+    
+    
+}
+struct node* Insert(struct node *root, int n)
+{
+    
+    struct node *new=newnode(n);
+    struct node *x=root,*y;
+    if(root==NULL)
+    {
+        new->color=0;
+        root=new;
+    }
+    else
+    {
+        //struct node *p=find(root,n);
+        while(x!=NULL)
+        {
+            y=x;
+            if(x->data>n)
+            {
+                x=x->left;
+            }
+            else
+            x=x->right;
+        }
+        struct node *p=y;
+        
+        if(y==NULL)
+        {
+            new->color=0;
+            root=new;
+        }
+        //as duplicates are not allowed
+        if(p->data==n)
+        {
+            printf("duplicates are not allowed\n");
+            return NULL;
+        }
+        new->parent=p;
+        if(p->data>n)
+        {
+            p->left=new;
+        }
+        else
+        p->right=new;
+        
+        fixtree(new);
+    }
+    return root;
+}
+
+int main()
+{
+    int opt=0,z,count=0;
+    struct node *ex;
+    while(opt!=3)
+    {
+        if(root==NULL)
+        {
+                count=0;
+        }
+        printf("1.Insert \n2.delete\n 3. exit \n 4. Inorder traversal \n");
+        printf("enter the option:\n");
+        scanf("%d",&opt);
+        switch(opt)
+        {
+            case 1:
+             printf("enter the element to be Inserted:\n");
+             scanf("%d",&z);
+            if(count==0)
+            {
+                root=Insert(root,z);
+                count++;
+            }
+            else
+            Insert(root,z);
+            
+            break;
+            case 2:
+             printf("enter the element to be deleted:\n");
+            scanf("%d",&z);
+            delete(root,z);
+             break;
+            case 3:
+            exit(0);
+            break;
+            case 4:
+            if(root==NULL)
+            {
+                printf("the tree is empty enter the nodes\n");
+            
+            }
+            inorder(root);
+            printf("\n");
+            break;
+            case 5:
+            printf("root= %d",root->data);
+            break;
+            case 6:
+            ex=Successor(root->right);
+            printf("succ %d",ex->data);
+        }
+        
+        
+    }
+}
+
+
+
