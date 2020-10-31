@@ -4,3 +4,19 @@ hype=math.hypot(AB,BC)                      #to calculate hypotenuse
 res=round(math.degrees(math.acos(BC/hype))) #to calculate required angle 
 degree=chr(176)                                #for DEGREE symbol
 print(res,degree, sep='')
+
+
+t = int(input("enter the test cases: "))
+for i in range(t):
+    size = int(input("Enter the size: "))
+    array = list(map(int, input("enter the array: ").strip().split()))
+    max = 0
+    for i in range(size):
+        for j in range(i,size):
+            if array[i]<array[j] and j-i>max:
+                max = j-i
+            if max>size-j:
+                break
+
+    print(abs(max))
+
