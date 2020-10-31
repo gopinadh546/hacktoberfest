@@ -128,3 +128,17 @@ for i in range(y):
 for i in range(len(b)):
     print(b[i])    
 """
+def comparison():
+    t = int(input("enter the test cases: "))
+
+    for i in range(t):
+        size = int(input("Enter the size: "))
+        array = list(map(int, input("enter the array: ").strip().split()))
+        for i in range(size-1):
+            if array[i] > array[i+1] :
+                print(array[i+1],end=" ")
+            else:
+                print(-1,end=" ")
+        print(-1)
+        array.sort()
+        print(*array)
